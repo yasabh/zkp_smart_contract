@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  share-handler:
+    build:
+      dockerfile: ./py_scripts/Dockerfile
+    volumes:
+      - ./py_scripts:/app
+      - ./contracts:/contracts
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    command: bash
+
+  blockchain:
+    build:
+      dockerfile: ./blockchain/Dockerfile
+    volumes:
+      - ./blockchain:/app
+      - ./contracts:/contracts
+    working_dir: /app
+    entrypoint: ["sh", "entrypoint.sh"]
+    ports:
+      - "8545:8545"
