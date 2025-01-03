@@ -1,1 +1,1 @@
-# zkp_smart_contract
+# a Smart Contract for ZKP and Threshold Secret Sharing
