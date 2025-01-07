@@ -16,12 +16,16 @@ RUN apt-get update \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ZoKrates
-RUN curl -LSfs get.zokrat.es | sh && \
-    export PATH=$PATH:/root/.zokrates/bin
-
 # Install Hardhat globally
 RUN npm install -g hardhat @openzeppelin/contracts
 
 # Install Python dependencies
 RUN pip3 install pycryptodome web3
+
+# Install Rust then Circom (only needed for the trusted setup)
+# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y \
+#     && export PATH="$HOME/.cargo/bin:$PATH" \
+#     && git clone https://github.com/iden3/circom.git /app/circom \
+#     && cd /app/circom \
+#     && cargo build --release \
+#     && ln -s /app/circom/target/release/circom /usr/bin/circom

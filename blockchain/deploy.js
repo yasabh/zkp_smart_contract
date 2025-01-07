@@ -1,14 +1,19 @@
 const fs = require("fs");
 
 async function main() {
+    const threshold = 3; // Set your threshold value here
+    
     const SecretSharing = await ethers.getContractFactory("SecretSharing");
-    const secretSharing = await SecretSharing.deploy();
-    await secretSharing.deployed();
+    const secretSharing = await SecretSharing.deploy(threshold);
+    await secretSharing.waitForDeployment();
 
-    fs.writeFileSync("./contracts/deployed_address.txt", secretSharing.address);
+    const address = await secretSharing.getAddress();
+    fs.writeFileSync("./contracts/deployed_address.txt", address);
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

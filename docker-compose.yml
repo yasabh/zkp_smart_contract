@@ -1,24 +1,25 @@
-version: '3.8'
-
 services:
-  share-handler:
-    build:
-      dockerfile: ./py_scripts/Dockerfile
-    volumes:
-      - ./py_scripts:/app
-      - ./contracts:/contracts
-    working_dir: /app
-    stdin_open: true
-    tty: true
-    command: bash
-
   blockchain:
     build:
       dockerfile: ./blockchain/Dockerfile
     volumes:
-      - ./blockchain:/app
-      - ./contracts:/contracts
+      - ./blockchain/deploy.js:/app/deploy.js
+      - ./blockchain/entrypoint.sh:/app/entrypoint.sh
+      - ./blockchain/hardhat.config.js:/app/hardhat.config.js
+      - ./contracts/deployed_address.txt:/app/contracts/deployed_address.txt
+      - ./contracts/SecretSharing.sol:/app/contracts/SecretSharing.sol
+      - ./contracts/Verifier.sol:/app/contracts/Verifier.sol
     working_dir: /app
     entrypoint: ["sh", "entrypoint.sh"]
     ports:
       - "8545:8545"
+
+  handler:
+    build:
+      dockerfile: ./handler/Dockerfile
+    volumes:
+      - ./handler/share_secret.py:/app/share_secret.py
+      - ./contracts/deployed_address.txt:/app/contracts/deployed_address.txt
+      - ./contracts/threshold_secret.circom:/app/contracts/threshold_secret.circom
+    working_dir: /app
+    command: bash -c "python share_secret.py & tail -f /dev/null"
