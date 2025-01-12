@@ -3,6 +3,12 @@
 ## Shamir Secret Sharing
 https://pycryptodome.readthedocs.io/en/latest/src/protocol/ss.html
 
+# Run Outcome
+Deployed Contract and Stored Shares
+![Deployed Contract and Stored Shares](docs/deployed_contract.jpg)
+
+Secret Reconstructed and Verified
+![Secret Verified](docs/verified_secret.jpg)
 
 ## Run inside the project file
 ```bash

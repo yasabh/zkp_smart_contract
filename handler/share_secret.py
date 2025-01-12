@@ -123,12 +123,12 @@ b = [[int(x) for x in pair] for pair in proof['pi_b'][:2]]  # First two arrays o
 c = [int(x) for x in proof['pi_c'][:2]]  # First two values of pi_c
 public_signals = [int(public_signals[0])]  # Convert public signals to uint256[1]
 
-print(a,b,c, public_signals)
+# print(a,b,c, public_signals)
 
 # Call the verifySecret function on the contract
 is_valid = contract.functions.verifySecret(a, b, c, public_signals).call()
 
-if is_valid:
-    print("The proof is valid!")
-else:
-    print("The proof is invalid.")
+# if is_valid:
+#     print("The proof is valid!")
+# else:
+#     print("The proof is invalid.")
