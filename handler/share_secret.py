@@ -1,7 +1,9 @@
 from Crypto.Protocol.SecretSharing import Shamir
 from Crypto.Hash import SHA256
 from web3 import Web3
+import subprocess
 import time
+import json
 
 # Configuration
 THRESHOLD = 3
@@ -49,6 +51,18 @@ contract_abi = [
         "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "view",
         "type": "function"
+    },
+    {
+        "inputs": [
+            {"internalType": "uint256[2]", "name": "a", "type": "uint256[2]"},
+            {"internalType": "uint256[2][2]", "name": "b", "type": "uint256[2][2]"},
+            {"internalType": "uint256[2]", "name": "c", "type": "uint256[2]"},
+            {"internalType": "uint256[1]", "name": "publicSignals", "type": "uint256[1]"}
+        ],
+        "name": "verifySecret",
+        "outputs": [{"internalType": "bool", "name": "", "type": "bool"}],
+        "stateMutability": "onlyOwner",
+        "type": "function"
     }
 ]
 
@@ -76,5 +90,45 @@ for address, (index, share) in address_shares.items():
 # Reconstruct secret from a subset of shares
 selected_shares = list(address_shares.values())[:THRESHOLD]
 reconstructed_secret = Shamir.combine(selected_shares)
-assert reconstructed_secret == hashed_secret, "Reconstructed secret does not match!"
-print(f"Secret '{reconstructed_secret.hex()}' successfully reconstructed and verified!")
+assert reconstructed_secret == hashed_secret, "Self-reconstructed secret does not match!"
+print(f"Secret '{reconstructed_secret.hex()}' successfully self-reconstructed and verified!")
+
+# Generate Proof and Public Signals using snarkjs (off-chain)
+input_data = {
+    "shares": [int(share[1].hex(), 16) for share in shares],
+    "threshold": THRESHOLD
+}
+# Save to input.json
+with open("contracts/input.json", "w") as f:
+    json.dump(input_data, f)
+
+# Generate the witness and the proof
+try:
+    subprocess.run(['node', 'contracts/threshold_secret_js/generate_witness.js', 'contracts/threshold_secret_js/threshold_secret.wasm', 'contracts/input.json', 'contracts/witness.wtns'], check=True)
+    subprocess.run(['snarkjs', 'groth16', 'prove', 'contracts/threshold_secret_0001.zkey', 'contracts/witness.wtns', 'contracts/proof.json', 'contracts/public.json'], check=True)
+except subprocess.CalledProcessError as e:
+    print(f"Error generating witness and/or the proof: {e}")
+    exit(1)
+
+# Load the generated proof and public signals (from snarkjs or any other tool)
+with open('contracts/proof.json', 'r') as f:
+    proof = json.load(f)
+
+with open('contracts/public.json', 'r') as f:
+    public_signals = json.load(f)
+
+# Extract proof components from the generated proof file
+a = [int(x) for x in proof['pi_a'][:2]]  # First two values of pi_a
+b = [[int(x) for x in pair] for pair in proof['pi_b'][:2]]  # First two arrays of pi_b
+c = [int(x) for x in proof['pi_c'][:2]]  # First two values of pi_c
+public_signals = [int(public_signals[0])]  # Convert public signals to uint256[1]
+
+print(a,b,c, public_signals)
+
+# Call the verifySecret function on the contract
+is_valid = contract.functions.verifySecret(a, b, c, public_signals).call()
+
+if is_valid:
+    print("The proof is valid!")
+else:
+    print("The proof is invalid.")

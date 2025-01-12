@@ -1,11 +1,26 @@
 # a Smart Contract for ZKP and Threshold Secret Sharing
 
+## Shamir Secret Sharing
 https://pycryptodome.readthedocs.io/en/latest/src/protocol/ss.html
+
+
+## Run inside the project file
+```bash
+docker compose up
+```
+
+## This should be done inside the "handler" container
+
+```bash
+docker exec -it zkp_smart_contract-handler-1 /bin/bash
+cd contracts
+```
 
 ### 1. Compile the Circuit
 ```bash
 circom threshold_secret.circom --r1cs --wasm --sym
 ```
+![Compile the Circuit](docs/1.jpg)
 
 ### 2. Trusted Setup
 ```bash
@@ -13,6 +28,7 @@ snarkjs powersoftau new bn128 12 pot12_0000.ptau
 snarkjs powersoftau contribute pot12_0000.ptau pot12_0001.ptau --name="YASIN"
 snarkjs powersoftau prepare phase2 pot12_0001.ptau pot12_final.ptau
 ```
+![Trusted Setup](docs/2.jpg)
 
 ### 3. Generate Proving and Verification Keys
 ```bash
@@ -20,8 +36,9 @@ snarkjs groth16 setup threshold_secret.r1cs pot12_final.ptau threshold_secret_00
 snarkjs zkey contribute threshold_secret_0000.zkey threshold_secret_0001.zkey --name="YASIN"
 snarkjs zkey export verificationkey threshold_secret_0001.zkey verification_key.json
 ```
+![Generate Proving and Verification Keys](docs/3.jpg)
 
-### 3. Proof Generation
+### 4. Proof Generation (Example)
 1. Save inputs to `input.json`:
    ```bash
    echo '{
@@ -34,18 +51,29 @@ snarkjs zkey export verificationkey threshold_secret_0001.zkey verification_key.
    node threshold_secret_js/generate_witness.js threshold_secret_js/threshold_secret.wasm input.json witness.wtns
    snarkjs groth16 prove threshold_secret_0001.zkey witness.wtns proof.json public.json
    ```
+![Proof Generation](docs/4.jpg)
 
-### 4. Verify Proof
+### 5. Verify Proof
 ```bash
 snarkjs groth16 verify verification_key.json public.json proof.json
 ```
+![Verify Proof](docs/5.jpg)
 
-### 5. Export Solidity Verifier
+### 6. Export Solidity Verifier
 ```bash
 snarkjs zkey export solidityverifier threshold_secret_0001.zkey Verifier.sol
+exit
 ```
-### 6. Tools used
+![Export Solidity Verifier](docs/6.jpg)
+
+## Re-run inside the project file
+Terminate the container firstly before re-running this:
 ```bash
+docker compose up
+```
+
+### 6. Tools used
+
 Hardhat: A development environment for compiling, deploying, testing, and debugging Ethereum smart contracts.
 Ethers.js: A JavaScript library for interacting with Ethereum smart contracts.
 Solidity: A programming language for writing the SecretSharingZKP contract.
@@ -58,4 +86,3 @@ Crypto.Hash.SHA256 for securely hashing the secret.
 Web3.py: For interacting with the Ethereum blockchain and the deployed smart contract.
 Node.js: Required for running Hardhat and other JavaScript-based tools.
 Linux Shell / Command Line: For executing Circom, SnarkJS, and Hardhat commands.
-```

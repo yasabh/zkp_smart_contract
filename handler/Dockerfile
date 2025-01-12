@@ -17,15 +17,15 @@ RUN apt-get update \
     rm -rf /var/lib/apt/lists/*
 
 # Install Hardhat globally
-RUN npm install -g hardhat @openzeppelin/contracts
+RUN npm install -g snarkjs hardhat @openzeppelin/contracts
 
 # Install Python dependencies
 RUN pip3 install pycryptodome web3
 
 # Install Rust then Circom (only needed for the trusted setup)
-# RUN curl https://sh.rustup.rs -sSf | bash -s -- -y \
-#     && export PATH="$HOME/.cargo/bin:$PATH" \
-#     && git clone https://github.com/iden3/circom.git /app/circom \
-#     && cd /app/circom \
-#     && cargo build --release \
-#     && ln -s /app/circom/target/release/circom /usr/bin/circom
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y \
+    && export PATH="$HOME/.cargo/bin:$PATH" \
+    && git clone https://github.com/iden3/circom.git /app/circom \
+    && cd /app/circom \
+    && cargo build --release \
+    && ln -s /app/circom/target/release/circom /usr/bin/circom
