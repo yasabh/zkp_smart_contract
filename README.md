@@ -1,5 +1,8 @@
 # a Smart Contract for ZKP and Threshold Secret Sharing
 
+## Example of Use Case
+Think of a big company treasury on Ethereum that needs five directors to agree before moving any funds. They take the wallet’s secret key and split it into five pieces so that any three pieces can rebuild the key, but one or two pieces by themselves mean nothing. Each director sends their piece to a smart contract along with a proof that their piece is genuine—without ever revealing the piece itself. Once the contract checks and accepts three valid proofs, it safely unlocks the funds. Everyone can see on the blockchain that exactly three real proofs went through, no single director ever exposes the key, and no one can sneak in a fake piece.
+
 ## Shamir Secret Sharing
 https://pycryptodome.readthedocs.io/en/latest/src/protocol/ss.html
 
